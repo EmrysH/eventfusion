@@ -10,6 +10,8 @@ import pyrealsense2 as rs
 ## import IR module
 import pyOptris as optris
 
+import threading
+
 # cv2.namedWindow('fusion image', cv2.WINDOW_NORMAL)
 
 img_num = 0
@@ -70,6 +72,9 @@ align_to = rs.stream.color
 align = rs.align(align_to)
 
 
+thermal_img = []
+thermal_data = []
+
 def get_rgbd_stream():  # with depth and color aligned
     # Wait for a coherent pair of frames: color
     pc = rs.pointcloud()
@@ -88,24 +93,22 @@ def get_rgbd_stream():  # with depth and color aligned
 
 # Palette:384*288 Thermal: 382*288
 def get_thermal_stream():
-    thermal_img_raw = optris.get_thermal_image(w_t, h_t) # get raw thermal data ,16bit, Kelvin temperature scale
-    thermal_img_gray = optris.get_palette_image(w_p, h_p)
-    # thermal_img_gray = cv2.cvtColor(thermal_img_gray, cv2.COLOR_BGR2GRAY)
+    global thermal_img, thermal_data
+    while True:
+        thermal_img_raw = optris.get_thermal_image(w_t, h_t) # get raw thermal data ,16bit, Kelvin temperature scale
+        thermal_img_gray = optris.get_palette_image(w_p, h_p)
+        # thermal_img_gray = cv2.cvtColor(thermal_img_gray, cv2.COLOR_BGR2GRAY)
+        thermal_img = cv2.resize(thermal_img_gray, (640, 480))
+        thermal_data = cv2.resize(thermal_img_raw, (640, 480))
+        code_terms = np.where(thermal_data < true_temp(25))
+
+        rows = code_terms[0]
+        cols = code_terms[1]
+        thermal_img[rows,cols] = 0
 
 
-    thermal_img = cv2.resize(thermal_img_gray, (640, 480))
-    thermal_data = cv2.resize(thermal_img_raw, (640, 480))
 
 
-    code_terms = np.where(thermal_data < true_temp(25))
-
-    rows = code_terms[0]
-    cols = code_terms[1]
-    thermal_img[rows,cols] = 0
-
-
-
-    return thermal_img, thermal_data
 
 def true_temp(x):
 
@@ -130,13 +133,18 @@ y_c = np.transpose(y_c)
 x_real_imgplane = (x_c - cx) / fx
 y_real_imgplane = (y_c - cy) / fy
 
+
+
+thermal_stream_thread = threading.Thread(target=get_thermal_stream)
+
+
 if __name__ == "__main__":
     # try :
 
-    while True:
-        thermalImage, data = get_thermal_stream()  # get thermal image
-        depthdata, rgbImage = get_rgbd_stream()  # get aligned RGBD image
+    thermal_stream_thread.start()
 
+    while True:
+        depthdata, rgbImage = get_rgbd_stream()  # get aligned RGBD image
 
         depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depthdata, alpha=0.03),
                                            cv2.COLORMAP_JET)  # convert depthdata to depth image
@@ -162,26 +170,11 @@ if __name__ == "__main__":
         imagePoints = np.round((imagePoints).astype(int))
         imagePoints = np.flip(imagePoints, axis=1)
 
-
-        # row = imagePoints[:, 0]
-        # row[row >= 479] = np.array([479])
-        # row[row < 0] = np.array([0])
-        # col = imagePoints[:, 1]
-        # col[col >= 639] = np.array([639])
-        # col[col < 0] = np.array([0])
-        #
-        # projected_image = thermalImage[row, col]
-        #
-        # projected_image[bad_obj_points] = 0
-        # projected_image= projected_image.reshape(480, 640)
-        # # cut wrong edge
-        # Fusion_img = projected_image[102:378, 135:503]  # 3 time ,4 times
-
         row = np.clip(imagePoints[:, 0], 0, 479)
         col = np.clip(imagePoints[:, 1], 0, 639)
 
 
-        projected_image = thermalImage[row,col]
+        projected_image = thermal_img[row,col]
 
         projected_image[bad_obj_points] = 0
 
@@ -228,4 +221,3 @@ if __name__ == "__main__":
     # close all windows
     cv2.destroyAllWindows()
     print("close all successfully, ending......")
-
