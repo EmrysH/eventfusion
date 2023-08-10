@@ -195,6 +195,9 @@ def get_pcd():
     o3ddepthimg = np.asanyarray(depthdata)
     # o3dcolorimg = np.asanyarray(temp_colormap)
     o3dcolorimg = np.asanyarray(Fusion_img)
+
+    # cv2.imshow("1",Fusion_img)
+    # cv2.waitKey(10)
     # change opencv's bgr to rgb
     o3dcolorimg = o3dcolorimg[..., ::-1].copy()
 
@@ -208,33 +211,10 @@ def get_pcd():
     return pcd
 
 
-
-
-# def callback_function(vis):
-#     # Get the current view control object
-#     view_ctrl = vis.get_view_control()
-#
-#     # Check if the mouse is being pressed
-#     if vis.poll_events() and vis.update_renderer():
-#         if vis.get_window_event_status().mouse_event:
-#             # Get the current mouse state
-#             mouse_event = vis.get_window_event_status().mouse_event
-#
-#             # Check if the left mouse button is pressed
-#             if mouse_event.button == o3d.visualization.gui.MouseButton.Left:
-#                 # Update the view control based on the mouse motion
-#                 view_ctrl.rotate(mouse_event.last_x, mouse_event.last_y, mouse_event.x, mouse_event.y)
-#
-#             # Check if the right mouse button is pressed
-#             elif mouse_event.button == o3d.visualization.gui.MouseButton.Right:
-#                 # Update the view control position based on the mouse motion
-#                 view_ctrl.translate(mouse_event.x - mouse_event.last_x, mouse_event.y - mouse_event.last_y)
-#
-#     return False  # Return False to indicate the callback should not be unregistered
-
 thermal_stream_thread = threading.Thread(target=get_thermal_stream)
 rgbd_stream_thread = threading.Thread(target=get_rgbd_stream)
 img_process_thread = threading.Thread(target=img_process)
+
 
 
 if __name__ == "__main__":
@@ -244,15 +224,16 @@ if __name__ == "__main__":
     img_process_thread.start()
     print("initializing...")
     time.sleep(3)
-    
+
     vis = o3d.visualization.Visualizer()
     vis.create_window()
     # vis.register_animation_callback(callback_function)
-    vis.add_geometry(get_pcd())
+    pcd = o3d.geometry.PointCloud()
+    vis.add_geometry(pcd)
 
     while True:
 
-        vis.poll_events()
+
         pcd_init = get_pcd()
         vis.clear_geometries()
         vis.add_geometry(pcd_init)
