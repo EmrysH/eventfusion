@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<thermalIntrinsic type_id="opencv-matrix">
+  <rows>3</rows>
+  <cols>3</cols>
+  <dt>d</dt>
+  <data>
+    7.5287252225847590e+02 0. 3.2839125150475661e+02 0.
+    7.5427319945281135e+02 2.3941263995083642e+02 0. 0. 1.</data></thermalIntrinsic>
+</opencv_storage>

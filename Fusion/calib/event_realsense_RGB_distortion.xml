@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<rgbDistortion type_id="opencv-matrix">
+  <rows>1</rows>
+  <cols>5</cols>
+  <dt>d</dt>
+  <data>
+    -5.0366332447650805e-02 4.9830914137260318e-02
+    1.1913897396797135e-03 -1.0401527841850447e-03
+    -6.8848624848953186e-03</data></rgbDistortion>
+</opencv_storage>
