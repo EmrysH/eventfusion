@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<thermalDistortion type_id="opencv-matrix">
+  <rows>1</rows>
+  <cols>5</cols>
+  <dt>d</dt>
+  <data>
+    -8.0436114807991566e-01 8.4173977197195493e-01
+    1.2032403958301238e-03 3.2877517163643916e-03
+    -6.7796921252765341e-01</data></thermalDistortion>
+</opencv_storage>
